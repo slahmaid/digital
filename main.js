@@ -2,12 +2,30 @@
   var THEME_KEY = "framekit-theme";
   var NEWSLETTER_KEY = "framekit-newsletter-seen";
   var root = document.documentElement;
+  var preloader = document.getElementById("preloader");
   var themeBtn = document.getElementById("theme-toggle");
   var newsletterModal = document.getElementById("newsletter-modal");
   var newsletterOverlay = document.getElementById("newsletter-overlay");
   var newsletterClose = document.getElementById("newsletter-close");
   var newsletterForm = document.getElementById("newsletter-form");
   var newsletterEmail = document.getElementById("newsletter-email");
+
+  function hidePreloader() {
+    if (!preloader) return;
+    preloader.classList.add("is-hidden");
+    document.body.classList.remove("is-preloading");
+    window.setTimeout(function () {
+      preloader.setAttribute("aria-hidden", "true");
+    }, 400);
+  }
+
+  if (preloader) {
+    preloader.setAttribute("aria-hidden", "false");
+    window.addEventListener("load", function () {
+      window.setTimeout(hidePreloader, 150);
+    });
+    window.setTimeout(hidePreloader, 2200);
+  }
 
   function currentTheme() {
     return root.getAttribute("data-theme") === "light" ? "light" : "dark";
