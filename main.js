@@ -47,6 +47,7 @@
     newsletterModal.setAttribute("aria-hidden", "true");
     newsletterOverlay.setAttribute("aria-hidden", "true");
     markNewsletterSeen();
+    updateStickyCta();
   }
 
   function openNewsletter() {
@@ -58,6 +59,7 @@
     if (newsletterEmail) {
       newsletterEmail.focus();
     }
+    updateStickyCta();
   }
 
   if (newsletterModal && newsletterOverlay) {
@@ -117,6 +119,7 @@
       menuCloseBtn.setAttribute("aria-hidden", open ? "false" : "true");
       menuCloseBtn.setAttribute("tabindex", open ? "0" : "-1");
     }
+    updateStickyCta();
   }
 
   if (toggle && navInner) {
@@ -141,6 +144,52 @@
         setMenuOpen(false);
       });
     });
+  }
+
+  var stickyCta = document.getElementById("mobile-sticky-cta");
+  var pricingSection = document.getElementById("pricing");
+  var finalCtaSection = document.querySelector(".cta-final");
+  var footer = document.querySelector(".footer");
+  var stickyHiddenByContext = false;
+
+  function isMobileViewport() {
+    return window.matchMedia("(max-width: 899px)").matches;
+  }
+
+  function updateStickyCta() {
+    if (!stickyCta) return;
+
+    var blocked =
+      !isMobileViewport() ||
+      document.body.classList.contains("menu-open") ||
+      (newsletterModal && newsletterModal.classList.contains("is-open")) ||
+      stickyHiddenByContext;
+
+    stickyCta.classList.toggle("is-visible", !blocked);
+    stickyCta.setAttribute("aria-hidden", blocked ? "true" : "false");
+    document.body.classList.toggle("has-mobile-sticky-cta", !blocked);
+  }
+
+  if (stickyCta) {
+    var observerTargets = [pricingSection, finalCtaSection, footer].filter(Boolean);
+    if ("IntersectionObserver" in window && observerTargets.length) {
+      var stickyObserver = new IntersectionObserver(
+        function (entries) {
+          stickyHiddenByContext = entries.some(function (entry) {
+            return entry.isIntersecting;
+          });
+          updateStickyCta();
+        },
+        { threshold: 0.08, rootMargin: "0px 0px -10% 0px" }
+      );
+      observerTargets.forEach(function (el) {
+        stickyObserver.observe(el);
+      });
+    }
+
+    window.addEventListener("resize", updateStickyCta, { passive: true });
+    window.addEventListener("orientationchange", updateStickyCta, { passive: true });
+    updateStickyCta();
   }
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
