@@ -1,7 +1,13 @@
 (function () {
   var THEME_KEY = "framekit-theme";
+  var NEWSLETTER_KEY = "framekit-newsletter-seen";
   var root = document.documentElement;
   var themeBtn = document.getElementById("theme-toggle");
+  var newsletterModal = document.getElementById("newsletter-modal");
+  var newsletterOverlay = document.getElementById("newsletter-overlay");
+  var newsletterClose = document.getElementById("newsletter-close");
+  var newsletterForm = document.getElementById("newsletter-form");
+  var newsletterEmail = document.getElementById("newsletter-email");
 
   function currentTheme() {
     return root.getAttribute("data-theme") === "light" ? "light" : "dark";
@@ -25,6 +31,62 @@
     setTheme(currentTheme());
     themeBtn.addEventListener("click", function () {
       setTheme(currentTheme() === "dark" ? "light" : "dark");
+    });
+  }
+
+  function markNewsletterSeen() {
+    try {
+      localStorage.setItem(NEWSLETTER_KEY, "1");
+    } catch (e) {}
+  }
+
+  function closeNewsletter() {
+    if (!newsletterModal || !newsletterOverlay) return;
+    newsletterModal.classList.remove("is-open");
+    newsletterOverlay.classList.remove("is-open");
+    newsletterModal.setAttribute("aria-hidden", "true");
+    newsletterOverlay.setAttribute("aria-hidden", "true");
+    markNewsletterSeen();
+  }
+
+  function openNewsletter() {
+    if (!newsletterModal || !newsletterOverlay) return;
+    newsletterModal.classList.add("is-open");
+    newsletterOverlay.classList.add("is-open");
+    newsletterModal.setAttribute("aria-hidden", "false");
+    newsletterOverlay.setAttribute("aria-hidden", "false");
+    if (newsletterEmail) {
+      newsletterEmail.focus();
+    }
+  }
+
+  if (newsletterModal && newsletterOverlay) {
+    var seen = false;
+    try {
+      seen = localStorage.getItem(NEWSLETTER_KEY) === "1";
+    } catch (e) {}
+
+    if (!seen) {
+      window.setTimeout(openNewsletter, 3000);
+    }
+
+    if (newsletterClose) {
+      newsletterClose.addEventListener("click", closeNewsletter);
+    }
+
+    newsletterOverlay.addEventListener("click", closeNewsletter);
+
+    if (newsletterForm) {
+      newsletterForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        closeNewsletter();
+      });
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && newsletterModal.classList.contains("is-open")) {
+        closeNewsletter();
+      }
     });
   }
 
